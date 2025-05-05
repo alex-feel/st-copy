@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/alex-feel/st-copy/compare/v1.0.1...v1.0.2) (2025-05-05)
+
+
+### Bug Fixes
+
+* ensure consistent button size by adjusting CSS visibility ([2637c65](https://github.com/alex-feel/st-copy/commit/2637c653f1abc234d78729b40f1e8b5c0ab4cce3))
+
 ## [1.0.1](https://github.com/alex-feel/st-copy/compare/v1.0.0...v1.0.1) (2025-05-05)
 
 
