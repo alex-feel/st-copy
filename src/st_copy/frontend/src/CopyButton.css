@@ -8,6 +8,7 @@
   cursor: pointer;
   color: inherit;
   line-height: 0;
+  min-height: 0.75rem;
 }
 
 .st-copy-btn svg {
