@@ -1,0 +1,21 @@
+.st-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  line-height: 0;
+}
+
+.st-copy-btn svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+.st-copy-label {
+  font-size: 0.75rem;
+  margin-left: 0;
+}
