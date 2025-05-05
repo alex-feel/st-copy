@@ -1,6 +1,6 @@
 [project]
 name = "st-copy"
-version = "1.0.0"
+version = "1.0.1"
 description = "Streamlit copy‑to‑clipboard button component"
 readme = "README.md"
 authors = [{ name = "Aleksandr Filippov", email = "alex-feel.saga628@passmail.com" }]
