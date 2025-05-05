@@ -1,0 +1,67 @@
+name: Test & Smoke
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-smoke:
+    name: Test & Smoke
+    if: ${{ ! startsWith(github.head_ref, 'release-please--branches--') }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: pyproject.toml
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: src/st_copy/frontend/package-lock.json
+
+      - name: Install JS deps
+        working-directory: src/st_copy/frontend
+        run: npm ci --no-audit --no-fund
+
+      - name: Build frontend
+        working-directory: src/st_copy/frontend
+        run: npm run build
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install Python deps with uv
+        run: uv sync --all-extras --dev
+
+      - name: Expose .venv to PATH
+        run: echo "$GITHUB_WORKSPACE/.venv/bin" >> $GITHUB_PATH
+
+      - name: Install pip into the uv venv
+        run: uv pip install pip
+
+      - name: Build component
+        run: uv build
+
+      - name: Run tests
+        uses: streamlit/streamlit-app-action@v0.0.3
+        with:
+          app-path: examples/app.py
+          pytest-args: -v --junit-xml=test-results.xml
+
+      - name: Surface tests
+        if: always()
+        uses: pmeier/pytest-results-action@main
+        with:
+          path: test-results.xml
+          summary: true
+          display-options: fEX
