@@ -119,3 +119,30 @@ with st.chat_message('assistant'):
         copied_label='Custom "Copied!" text',
         key='Any key',
     )
+
+# Chat
+if 'demo_history' not in st.session_state:
+    st.session_state.demo_history = []
+
+for idx, (role, text) in enumerate(st.session_state.demo_history):
+    container = st.chat_message(role)
+    with container:
+        st.write(text)
+        if role == 'human':
+            copy_button(
+                text,
+                tooltip='Copy your message',
+                key=f'copy_human_{idx}',
+            )
+        if role == 'assistant':
+            copy_button(
+                text,
+                tooltip='Copy assistant message',
+                key=f'copy_assistant_{idx}',
+            )
+
+if user_text := st.chat_input('Type something to test copy_button…'):
+    st.session_state.demo_history.append(('human', user_text))
+    assistant_text = 'This is a standard assistant response!'
+    st.session_state.demo_history.append(('assistant', assistant_text))
+    st.rerun()
