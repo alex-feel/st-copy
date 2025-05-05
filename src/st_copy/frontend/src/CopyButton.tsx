@@ -74,23 +74,19 @@ function CopyButton({ args, theme }: ComponentProps) {
 
   return (
     <button
-      className="st-copy-btn"
+      className={copied ? "st-copy-btn button--copied" : "st-copy-btn"}
       onClick={copyHandler}
       title={tooltip ?? "Copy"}
-      style={{
-        color: theme?.textColor,
-      }}
+      style={{ color: theme?.textColor }}
     >
       {renderIcon()}
-      {copied && (
-        <span
-          className="st-copy-label"
-        >
-          {copied_label ?? "Copied!"}
-        </span>
-      )}
+
+      {/* Always in DOM, but hidden by default */}
+      <span className="st-copy-label">
+        {copied_label ?? "Copied!"}
+      </span>
     </button>
-  );
+  )
 }
 
 const ConnectedCopyButton = withStreamlitConnection(CopyButton);
