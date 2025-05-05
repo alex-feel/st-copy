@@ -1,6 +1,6 @@
 # Streamlit Copy-to-Clipboard Button Component
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_red.svg)](https://st-copy.streamlit.app/) [![Python Version](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Falex-feel%2Fst-copy%2Frefs%2Fheads%2Fmain%2Fpyproject.toml)](https://github.com/alex-feel/st-copy/blob/main/pyproject.toml) [![GitHub License](https://img.shields.io/github/license/alex-feel/st-copy)](https://github.com/alex-feel/st-copy/blob/main/LICENSE)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_red.svg)](https://st-copy.streamlit.app/) [![PyPI](https://img.shields.io/pypi/v/st-copy.svg)](https://pypi.org/project/st-copy/) [![Python Version](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Falex-feel%2Fst-copy%2Frefs%2Fheads%2Fmain%2Fpyproject.toml)](https://github.com/alex-feel/st-copy/blob/main/pyproject.toml) [![GitHub License](https://img.shields.io/github/license/alex-feel/st-copy)](https://github.com/alex-feel/st-copy/blob/main/LICENSE)
 
 A **tiny, theme‑aware Streamlit component** that adds a one‑click "copy-to-clipboard" button to your app — perfect for the chat UI, URLs or any other text the user might need to copy.
 
