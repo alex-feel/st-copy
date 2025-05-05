@@ -49,11 +49,14 @@ from st_copy import copy_button
 
 msg = 'some message'
 
-copy_button(msg)
+copy_button(msg, key=msg)
 ```'''
 with st.chat_message('assistant'):
     st.markdown(f'**Assistant:** {msg_1}')
-    copy_button(msg_1)
+    copy_button(
+        msg_1,
+        key=msg_1,
+    )
 
 msg_2 = '''Use the following code to add a copy button with a custom tooltip and/or label:
 
@@ -66,6 +69,7 @@ copy_button(
     msg,
     tooltip='✨ Special tooltip!',
     copied_label='Check my tooltip!',
+    key=msg,
 )
 ```'''
 with st.chat_message('assistant'):
@@ -74,6 +78,7 @@ with st.chat_message('assistant'):
         msg_2,
         tooltip='✨ Special tooltip!',
         copied_label='Check my tooltip!',
+        key=msg_2,
     )
 
 msg_3 = '''Use the following code to add the button style Streamlit uses in code blocks:
@@ -86,6 +91,7 @@ msg = 'some message'
 copy_button(
     msg,
     icon='st',
+    key=msg,
 )
 ```'''
 with st.chat_message('assistant'):
@@ -93,6 +99,7 @@ with st.chat_message('assistant'):
     copy_button(
         msg_3,
         icon='st',
+        key=msg_3,
     )
 
 msg_4 = '''Use all parameters together:
@@ -141,7 +148,7 @@ for idx, (role, text) in enumerate(st.session_state.demo_history):
                 key=f'copy_assistant_{idx}',
             )
 
-if user_text := st.chat_input('Type something to test copy_button…'):
+if user_text := st.chat_input('Type something to test copy_button...'):
     st.session_state.demo_history.append(('human', user_text))
     assistant_text = 'This is a standard assistant response!'
     st.session_state.demo_history.append(('assistant', assistant_text))
