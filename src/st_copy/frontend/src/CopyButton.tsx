@@ -17,8 +17,10 @@ function CopyButton({ args, theme }: ComponentProps) {
 
   const [copied, setCopied] = useState(false);
 
-  // Resize iframe on every paint
-  useEffect(() => Streamlit.setFrameHeight(), [copied]);
+  // Call it just once on mount
+  useEffect(() => {
+    Streamlit.setFrameHeight()
+  }, [])
 
   // Handle click → copy → visual feedback → notify Python
   const copyHandler = async () => {
