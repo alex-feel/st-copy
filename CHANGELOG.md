@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/alex-feel/st-copy/compare/v1.0.2...v1.0.3) (2025-06-04)
+
+
+### Bug Fixes
+
+* keep lockfile version placeholder ([e3473da](https://github.com/alex-feel/st-copy/commit/e3473daa6dad00f3533d20397966bc43aa81d0d4))
+
 ## [1.0.2](https://github.com/alex-feel/st-copy/compare/v1.0.1...v1.0.2) (2025-05-05)
 
 
