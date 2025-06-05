@@ -50,6 +50,21 @@ def st_copy_module(monkeypatch) -> ModuleType:
     return st_copy
 
 
+@pytest.fixture
+def st_copy_module_dev(monkeypatch) -> ModuleType:
+    """Import ``st_copy`` with the dev server enabled."""
+    monkeypatch.setenv('ST_COPY_DEV_SERVER', 'auto')
+    from streamlit import components as comps_pkg
+
+    rec = _Recorder()
+    monkeypatch.setattr(comps_pkg.v1, 'declare_component', rec)
+
+    import st_copy  # noqa: E402
+    st_copy = reload(st_copy)
+    st_copy._recorder = rec
+    return st_copy
+
+
 # Tests
 def test_declare_component_path(st_copy_module):
     """``declare_component`` must be called once with the correct *path*."""
@@ -147,4 +162,13 @@ def test_returns_true_on_success(st_copy_module):
     st_copy_module.component = lambda **_: True
 
     assert st_copy_module.copy_button('hi') is True
+
+
+def test_declare_component_url(st_copy_module_dev):
+    """``declare_component`` must use the development URL when configured."""
+    rec: _Recorder = st_copy_module_dev._recorder
+    call = rec.calls[0]
+
+    assert call['args'][0] == 'st_copy'
+    assert call['url'] == 'http://localhost:3001'
 
