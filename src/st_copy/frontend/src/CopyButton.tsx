@@ -27,6 +27,7 @@ function CopyButton({ args, theme }: ComponentProps) {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
+      Streamlit.setComponentValue(true);
 
       setTimeout(() => {
         setCopied(false);
