@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import {
   ComponentProps,
   withStreamlitConnection,
@@ -6,7 +6,7 @@ import {
 } from "streamlit-component-lib";
 import "./CopyButton.css";
 
-// A bidirectional “copy to clipboard” button
+// A bidirectional "copy to clipboard" button
 function CopyButton({ args, theme }: ComponentProps) {
   const { text, icon, tooltip, copied_label } = args as {
     text: string;
@@ -16,24 +16,55 @@ function CopyButton({ args, theme }: ComponentProps) {
   };
 
   const [copied, setCopied] = useState(false);
+  const timeoutRef = useRef<number | null>(null);
 
-  // Call it just once on mount
+  // Initial height setup on mount and cleanup on unmount
   useEffect(() => {
-    Streamlit.setFrameHeight()
-  }, [])
+    Streamlit.setFrameHeight();
 
-  // Handle click → copy → visual feedback → notify Python
+    return () => {
+      if (timeoutRef.current !== null) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Update height whenever copied state changes to prevent layout jumps
+  useEffect(() => {
+    Streamlit.setFrameHeight();
+  }, [copied]);
+
+  // Handle click → copy → visual feedback
   const copyHandler = useCallback(async () => {
     try {
+      // Clear any existing timeout to prevent state conflicts
+      if (timeoutRef.current !== null) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      // Try to copy text to clipboard
+      if (!navigator.clipboard) {
+        throw new Error("Clipboard API not available");
+      }
+
       await navigator.clipboard.writeText(text);
       setCopied(true);
-      Streamlit.setComponentValue(true);
 
-      setTimeout(() => {
+      // Don't call Streamlit.setComponentValue here to avoid rerun
+      // Only notify Python after animation completes if absolutely necessary
+
+      // Store timeout reference so we can clear it if needed
+      timeoutRef.current = window.setTimeout(() => {
         setCopied(false);
+        timeoutRef.current = null;
+
+        // If Python-side notification is required, do it AFTER animation completes
+        // Streamlit.setComponentValue(true);
       }, 1000);
-    } catch {
-      Streamlit.setComponentValue(false);
+    } catch (error) {
+      console.warn("Clipboard operation failed:", error);
+      // Only notify Python of failures if absolutely necessary
+      // Streamlit.setComponentValue(false);
     }
   }, [text]);
 
@@ -59,7 +90,7 @@ function CopyButton({ args, theme }: ComponentProps) {
       );
     }
 
-    // Google Material “content_copy” icon (20px)
+    // Google Material "content_copy" icon (20px)
     return (
       <svg
         xmlns="http://www.w3.org/2000/svg"
