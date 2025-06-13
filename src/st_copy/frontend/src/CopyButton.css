@@ -9,8 +9,6 @@
   color: inherit;
   line-height: 0;
   min-height: 1.5rem;
-  /* Ensure consistent width to prevent layout shifts */
-  width: auto;
   position: relative;
 }
 
@@ -19,18 +17,21 @@
   flex-shrink: 0;
 }
 
+
 .st-copy-label {
   font-size: 0.75rem;
   margin-left: 0;
   opacity: 0;
-  max-width: 0;
+  width: 0;
+  min-width: 0;
   overflow: hidden;
   white-space: nowrap;
-  transition: opacity 0.2s ease, max-width 0.2s ease, margin-left 0.2s ease;
+  transition: opacity 0.2s ease, width 0.2s ease, margin-left 0.2s ease;
 }
 
 .button--copied .st-copy-label {
   opacity: 1;
-  max-width: 100px; /* Adjust based on longest label */
+  width: auto;
+  min-width: max-content;
   margin-left: 0.4rem;
 }

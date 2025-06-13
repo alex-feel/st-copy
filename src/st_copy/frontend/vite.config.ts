@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js'
 
 // Use Preact to shrink bundle size
-const alias = {
+export const alias = {
   react: 'preact/compat',
   'react-dom': 'preact/compat',
   'react-dom/client': 'preact/compat',
@@ -15,6 +15,12 @@ export default defineConfig({
   plugins: [react(), cssInjectedByJsPlugin()],
   resolve: {
     alias,
+  },
+  optimizeDeps: {
+    exclude: ['streamlit-component-lib'],
+  },
+  build: {
+    rollupOptions: { external: ['streamlit-component-lib'] },
   },
   base: './',
 })

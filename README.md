@@ -55,6 +55,12 @@ def copy_button(
 | `key`          | **str \| None**, default `None`                                     | Unique component key; if omitted a random UUIDv4 is generated.                                                   |
 | **Returns**    | **bool \| None**                                                    | `True` – copy succeeded; `False` – Clipboard API failed; `None` – button not clicked yet.                        |
 
+## Requirements
+
+- Streamlit **1.45** or newer.
+- Clipboard API requires a secure (HTTPS) context when deployed.
+
+
 ## 🎨 Examples
 
 See [examples/app.py](./examples/app.py) for a chat‑style demo that showcases every argument and the deployed version at https://st-copy.streamlit.app/.

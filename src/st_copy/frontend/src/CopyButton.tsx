@@ -18,6 +18,23 @@ function CopyButton({ args, theme }: ComponentProps) {
   const [copied, setCopied] = useState(false);
   const timeoutRef = useRef<number | null>(null);
 
+  async function tryCopy(textToCopy: string): Promise<boolean> {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(textToCopy);
+      return true;
+    }
+
+    const ta = document.createElement('textarea');
+    ta.value = textToCopy;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  }
+
   // Initial height setup on mount and cleanup on unmount
   useEffect(() => {
     Streamlit.setFrameHeight();
@@ -36,35 +53,24 @@ function CopyButton({ args, theme }: ComponentProps) {
 
   // Handle click → copy → visual feedback
   const copyHandler = useCallback(async () => {
+    if (timeoutRef.current !== null) {
+      clearTimeout(timeoutRef.current);
+    }
+
     try {
-      // Clear any existing timeout to prevent state conflicts
-      if (timeoutRef.current !== null) {
-        clearTimeout(timeoutRef.current);
+      const ok = await tryCopy(text);
+      if (!ok) {
+        throw new Error('copy failed');
       }
 
-      // Try to copy text to clipboard
-      if (!navigator.clipboard) {
-        throw new Error("Clipboard API not available");
-      }
-
-      await navigator.clipboard.writeText(text);
       setCopied(true);
 
-      // Don't call Streamlit.setComponentValue here to avoid rerun
-      // Only notify Python after animation completes if absolutely necessary
-
-      // Store timeout reference so we can clear it if needed
       timeoutRef.current = window.setTimeout(() => {
         setCopied(false);
         timeoutRef.current = null;
-
-        // If Python-side notification is required, do it AFTER animation completes
-        // Streamlit.setComponentValue(true);
       }, 1000);
     } catch (error) {
-      console.warn("Clipboard operation failed:", error);
-      // Only notify Python of failures if absolutely necessary
-      // Streamlit.setComponentValue(false);
+      console.warn('Clipboard operation failed:', error);
     }
   }, [text]);
 
@@ -115,7 +121,7 @@ function CopyButton({ args, theme }: ComponentProps) {
       {iconElement}
 
       {/* Always in DOM, but hidden by default */}
-      <span className="st-copy-label">
+      <span className="st-copy-label" aria-live="polite">
         {copied_label ?? "Copied!"}
       </span>
     </button>
