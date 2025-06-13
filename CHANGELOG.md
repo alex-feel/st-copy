@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.1](https://github.com/alex-feel/st-copy/compare/v1.1.0...v1.1.1) (2025-06-13)
+
+
+### Bug Fixes
+
+* resolve glitch effect in multipage copy button ([5263a3d](https://github.com/alex-feel/st-copy/commit/5263a3dcbe9b04acf920a47ed4a6ce21f596ed20))
+* resolve glitch effect in multipage copy button ([9bafb87](https://github.com/alex-feel/st-copy/commit/9bafb8798a391e4b14c7bdcc2685dabf4ca5e9e6)), closes [#18](https://github.com/alex-feel/st-copy/issues/18)
+
 ## [1.1.0](https://github.com/alex-feel/st-copy/compare/v1.0.2...v1.1.0) (2025-06-05)
 
 
