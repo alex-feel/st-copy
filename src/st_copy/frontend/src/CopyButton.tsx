@@ -50,21 +50,16 @@ function CopyButton({ args, theme }: ComponentProps) {
       await navigator.clipboard.writeText(text);
       setCopied(true);
 
-      // Don't call Streamlit.setComponentValue here to avoid rerun
-      // Only notify Python after animation completes if absolutely necessary
-
-      // Store timeout reference so we can clear it if needed
+      // Delay notifying Python until the animation completes
       timeoutRef.current = window.setTimeout(() => {
         setCopied(false);
         timeoutRef.current = null;
 
-        // If Python-side notification is required, do it AFTER animation completes
-        // Streamlit.setComponentValue(true);
+        Streamlit.setComponentValue(true);
       }, 1000);
     } catch (error) {
       console.warn("Clipboard operation failed:", error);
-      // Only notify Python of failures if absolutely necessary
-      // Streamlit.setComponentValue(false);
+      Streamlit.setComponentValue(false);
     }
   }, [text]);
 
