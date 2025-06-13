@@ -3,6 +3,8 @@ import uuid
 from typing import Literal
 from typing import Optional
 
+RELEASE = True
+
 import streamlit.components.v1 as components
 
 RAW = os.getenv('ST_COPY_DEV_SERVER')
