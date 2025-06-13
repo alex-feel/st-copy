@@ -50,16 +50,13 @@ function CopyButton({ args, theme }: ComponentProps) {
       await navigator.clipboard.writeText(text);
       setCopied(true);
 
-      // Delay notifying Python until the animation completes
+      // Reset the "copied" state after the short animation
       timeoutRef.current = window.setTimeout(() => {
         setCopied(false);
         timeoutRef.current = null;
-
-        Streamlit.setComponentValue(true);
       }, 1000);
     } catch (error) {
       console.warn("Clipboard operation failed:", error);
-      Streamlit.setComponentValue(false);
     }
   }, [text]);
 
