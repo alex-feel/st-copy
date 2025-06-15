@@ -52,6 +52,10 @@ jobs:
       - name: Build component
         run: uv build
 
+      - name: Run frontend tests
+        working-directory: src/st_copy/frontend
+        run: npm run test
+
       - name: Run tests
         uses: streamlit/streamlit-app-action@v0.0.3
         with:

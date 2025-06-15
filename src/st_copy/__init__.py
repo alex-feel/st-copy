@@ -5,6 +5,8 @@ from typing import Optional
 
 import streamlit.components.v1 as components
 
+RELEASE = True
+
 RAW = os.getenv('ST_COPY_DEV_SERVER')
 DEV_URL = (RAW or '').strip()
 

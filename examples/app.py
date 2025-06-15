@@ -1,4 +1,3 @@
-import importlib.metadata as meta
 
 import streamlit as st
 
@@ -16,7 +15,6 @@ with st.sidebar:
         '[alex‑feel/st‑copy](https://github.com/alex-feel/st-copy)'
     )
 
-    version = meta.version('st-copy')
     st.markdown(
         '[![PyPI](https://img.shields.io/pypi/v/st-copy.svg)]'
         '(https://pypi.org/project/st-copy/)'
@@ -32,7 +30,7 @@ with st.sidebar:
         '(https://github.com/alex-feel/st-copy/blob/main/LICENSE)'
     )
 
-    install_cmd = f'pip install st-copy=={version}'
+    install_cmd = 'pip install st-copy'
     st.code(install_cmd, language='bash')
     copy_button(install_cmd, key='sidebar‑install')
 

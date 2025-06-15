@@ -11,7 +11,7 @@ requires-python = ">=3.9"
 # (optional) st.chat_message – only in the demo app: 1.24.0 (chat elements introduced; https://docs.streamlit.io/1.24.0/develop/api-reference/chat/st.chat_message)
 # (optional) streamlit.testing.v1.AppTest – only in test‑suite: 1.28.0 (AppTest helper first documented; https://docs.streamlit.io/1.28.0/develop/api-reference/app-testing/st.testing.v1.apptest)
 dependencies = [
-  "streamlit>=0.79.0",
+  "streamlit>=1.45.0",
 ]
 
 [build-system]
@@ -35,10 +35,11 @@ packages = ["src/st_copy"]
 [dependency-groups]
 dev = [
   "hatchling>=1.27.0",
+  "playwright>=1.52.0",
   "pre-commit>=4.2.0",
   "pytest-cov>=6.1.1",
   "pytest>=8.3.5",
-  "streamlit>=0.79.0",
+  "streamlit>=1.45.0",
 ]
 
 [tool.ruff]
