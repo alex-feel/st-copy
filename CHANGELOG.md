@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.2](https://github.com/alex-feel/st-copy/compare/v1.1.1...v1.1.2) (2025-06-15)
+
+
+### Bug Fixes
+
+* resolve issue with "Copied!" label not displaying ([6bdf299](https://github.com/alex-feel/st-copy/commit/6bdf2999ab7f1193d5d0168b18ed645329dc9d5e))
+* resolve issue with "Copied!" label not displaying ([f01131b](https://github.com/alex-feel/st-copy/commit/f01131b39bb5a156c90e9a46b0f7d9fa39773a08))
+
 ## [1.1.1](https://github.com/alex-feel/st-copy/compare/v1.1.0...v1.1.1) (2025-06-13)
 
 
