@@ -1,12 +1,20 @@
-import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import {
-  ComponentProps,
   withStreamlitConnection,
   Streamlit,
-} from "streamlit-component-lib";
-import "./CopyButton.css";
+  ComponentProps,
+} from 'streamlit-component-lib';
 
-// A bidirectional "copy to clipboard" button
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';  // => preact via alias
+import './CopyButton.css';
+
+const CLIPBOARD_UNAVAILABLE_MSG = 'Clipboard API not available';
+
 function CopyButton({ args, theme }: ComponentProps) {
   const { text, icon, tooltip, copied_label } = args as {
     text: string;
@@ -15,56 +23,49 @@ function CopyButton({ args, theme }: ComponentProps) {
     copied_label?: string;
   };
 
+  /* flag for "Copied!" animation */
   const [copied, setCopied] = useState(false);
-  const timeoutRef = useRef<number | null>(null);
+  const timer = useRef<number | null>(null);
 
-  // Initial height setup on mount and cleanup on unmount
-  useEffect(() => {
-    Streamlit.setFrameHeight();
-
-    return () => {
-      if (timeoutRef.current !== null) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Update height whenever copied state changes to prevent layout jumps
   useEffect(() => {
     Streamlit.setFrameHeight();
   }, [copied]);
 
-  // Handle click → copy → visual feedback
-  const copyHandler = useCallback(async () => {
+  /* clear timeout on unmount */
+  useEffect(() => {
+    return () => { if (timer.current) clearTimeout(timer.current); };
+  }, []);
+
+  /* safest copy helper */
+  const tryCopy = async (payload: string): Promise<boolean> => {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(payload);
+      return true;
+    }
+    console.warn(CLIPBOARD_UNAVAILABLE_MSG);
+    const ta = document.createElement('textarea');
+    ta.value = payload;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  };
+
+  const onClick = useCallback(async () => {
+    if (timer.current) clearTimeout(timer.current);
+
     try {
-      // Clear any existing timeout to prevent state conflicts
-      if (timeoutRef.current !== null) {
-        clearTimeout(timeoutRef.current);
-      }
-
-      // Try to copy text to clipboard
-      if (!navigator.clipboard) {
-        throw new Error("Clipboard API not available");
-      }
-
-      await navigator.clipboard.writeText(text);
+      if (!(await tryCopy(text))) throw new Error('copy failed');
       setCopied(true);
-
-      // Don't call Streamlit.setComponentValue here to avoid rerun
-      // Only notify Python after animation completes if absolutely necessary
-
-      // Store timeout reference so we can clear it if needed
-      timeoutRef.current = window.setTimeout(() => {
+      timer.current = window.setTimeout(() => {
         setCopied(false);
-        timeoutRef.current = null;
-
-        // If Python-side notification is required, do it AFTER animation completes
-        // Streamlit.setComponentValue(true);
-      }, 1000);
-    } catch (error) {
-      console.warn("Clipboard operation failed:", error);
-      // Only notify Python of failures if absolutely necessary
-      // Streamlit.setComponentValue(false);
+        timer.current = null;
+      }, 1_000);
+    } catch (err) {
+      console.warn('Clipboard operation failed:', err);
     }
   }, [text]);
 
@@ -107,20 +108,18 @@ function CopyButton({ args, theme }: ComponentProps) {
 
   return (
     <button
-      className={copied ? "st-copy-btn button--copied" : "st-copy-btn"}
-      onClick={copyHandler}
-      title={tooltip ?? "Copy"}
+      data-testid="st-copy-btn"
+      className={copied ? 'st-copy-btn button--copied' : 'st-copy-btn'}
+      onClick={onClick}
+      title={tooltip ?? 'Copy'}
       style={{ color: theme?.textColor }}
     >
       {iconElement}
-
-      {/* Always in DOM, but hidden by default */}
-      <span className="st-copy-label">
-        {copied_label ?? "Copied!"}
+      <span className="st-copy-label" aria-live="polite">
+        {copied_label ?? 'Copied!'}
       </span>
     </button>
-  )
+  );
 }
 
-const ConnectedCopyButton = withStreamlitConnection(CopyButton);
-export default ConnectedCopyButton;
+export default withStreamlitConnection(CopyButton);
