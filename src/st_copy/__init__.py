@@ -1,11 +1,13 @@
 """st-copy: a copy-to-clipboard button component for Streamlit.
 
 Built on Streamlit Custom Components v2 (frameless). Because a v2 component
-renders inline in the app DOM instead of inside an iframe, the button can be
+renders inline in the app DOM instead of inside an iframe, the button is
 mounted with ``width='content'`` and aligns beside sibling elements inside
 ``st.container(horizontal=True)`` (see GitHub issue #27).
 """
 
+import glob
+import os
 import uuid
 from typing import Any
 from typing import Literal
@@ -13,11 +15,8 @@ from typing import Optional
 
 import streamlit.components.v2 as components_v2
 
-# Fully-qualified component name: "<project name>.<component name>" where both
-# halves come from the runtime metadata in src/st_copy/pyproject.toml
-# ([project].name and [[tool.streamlit.component.components]].name). Streamlit
-# resolves the frontend bundle from that component's declared asset_dir.
-_COMPONENT_NAME = 'st-copy.st_copy'
+# Directory holding the built frontend bundle (shipped inside the wheel).
+_FRONTEND_DIST = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'frontend', 'dist')
 
 # HTML skeleton mounted by Streamlit into the component's host element (a shadow
 # root, since isolate_styles defaults to True). The frontend
@@ -31,11 +30,27 @@ _COMPONENT_HTML = (
     '</button>'
 )
 
-# The mounting command is created lazily and cached. Declaring it at import time
-# would eagerly validate the asset glob against the component manifest, which is
-# only available inside a running Streamlit app; deferring keeps ``import
-# st_copy`` safe in any context (tests, tooling, docs).
+# The mounting command is created lazily and cached. The built JS/CSS are passed
+# as *inline* content (read from the shipped bundle) rather than as asset-dir
+# path globs, so the component needs no package manifest and resolves
+# identically under a real ``streamlit run`` server, ``streamlit.testing`` /
+# ``AppTest``, and bare mode (manifest discovery only runs in a full Runtime).
+# A leading comment guarantees Streamlit treats the content as inline, not as a
+# file path.
 _component: Any = None
+
+
+def _read_bundle(pattern: str) -> str:
+    """Return the contents of the single built bundle file matching ``pattern``."""
+    matches = sorted(glob.glob(os.path.join(_FRONTEND_DIST, pattern)))
+    if not matches:
+        raise FileNotFoundError(
+            f'st-copy frontend bundle not found: no file matching {pattern!r} in '
+            f'{_FRONTEND_DIST!r}. Build it with '
+            '`npm --prefix src/st_copy/frontend run build`.'
+        )
+    with open(matches[0], encoding='utf-8') as bundle:
+        return bundle.read()
 
 
 def _get_component() -> Any:
@@ -43,10 +58,10 @@ def _get_component() -> Any:
     global _component
     if _component is None:
         _component = components_v2.component(
-            _COMPONENT_NAME,
+            'st_copy',
             html=_COMPONENT_HTML,
-            css='index-*.css',
-            js='index-*.js',
+            css='/* st-copy */\n' + _read_bundle('index-*.css'),
+            js='/* st-copy */\n' + _read_bundle('index-*.js'),
         )
     return _component
 

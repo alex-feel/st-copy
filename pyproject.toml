@@ -24,7 +24,6 @@ ignore-vcs = true
 [tool.hatch.build.targets.sdist]
 include = [
   "src/st_copy/frontend/dist/**",
-  "src/st_copy/pyproject.toml",
   "src/st_copy/py.typed",
   "src/st_copy/__init__.py",
 ]
