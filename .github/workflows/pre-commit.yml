@@ -25,6 +25,9 @@ jobs:
       - name: Install pre-commit
         run: pip install pre-commit
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:

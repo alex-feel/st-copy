@@ -40,7 +40,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.10'
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
@@ -54,5 +54,37 @@ jobs:
           git config --global user.email "actions@github.com"
           git add uv.lock
           git commit -m "chore: update uv.lock after version bump [skip ci]" || echo "No changes to commit"
+          git remote set-url origin https://x-access-token:${{ secrets.RELEASE_PLEASE_TOKEN }}@github.com/${GITHUB_REPOSITORY}
+          git push
+
+  update-package-lock:
+    name: Update package-lock.json file
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: src/st_copy/frontend/package-lock.json
+
+      - name: Update package-lock.json (version field)
+        working-directory: src/st_copy/frontend
+        run: npm install --package-lock-only --no-audit --no-fund
+
+      - name: Commit and push updated package-lock.json
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+          git add src/st_copy/frontend/package-lock.json
+          git commit -m "chore: update package-lock.json after version bump [skip ci]" || echo "No changes to commit"
           git remote set-url origin https://x-access-token:${{ secrets.RELEASE_PLEASE_TOKEN }}@github.com/${GITHUB_REPOSITORY}
           git push

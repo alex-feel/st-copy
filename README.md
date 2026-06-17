@@ -5,9 +5,10 @@
 A **tiny, theme‑aware Streamlit component** that adds a one‑click "copy-to-clipboard" button to your app — perfect for the chat UI, URLs or any other text the user might need to copy.
 
 ## ✨ Features
-- **Streamlit theme aware**: Adapts icon colour & tooltip style automatically; works in both light _and_ dark themes.
+- **Streamlit theme aware**: Adapts icon color & tooltip style automatically; works in both light _and_ dark themes.
+- **Inline layout**: Built on Streamlit Custom Components v2 (frameless, no iframe), so the button aligns beside other elements inside `st.container(horizontal=True)`.
 - **Two icon styles**: Google *Material Symbols* (default) or the native Streamlit code‑block icon.
-- **Custom tooltip & "Copied!" label**: Localised UI in one line.
+- **Custom tooltip & "Copied!" label**: Localized UI in one line.
 - **Keyboard‑friendly**: Fully focusable, press **Enter/Space** to copy.
 
 ## 🔧 Installation
@@ -57,7 +58,8 @@ def copy_button(
 
 ## Requirements
 
-- Streamlit **1.45** or newer.
+- Python **3.10** or newer.
+- Streamlit **1.56** or newer (the component uses the Custom Components v2 API).
 - Clipboard API requires a secure (HTTPS) context when deployed.
 
 

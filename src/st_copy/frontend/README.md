@@ -1,54 +1,38 @@
-# React + TypeScript + Vite
+# st-copy frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The frontend half of [`st-copy`](https://github.com/alex-feel/st-copy): a tiny,
+framework-free TypeScript bundle for a **Streamlit Custom Components v2**
+(frameless) copy-to-clipboard button.
 
-Currently, two official plugins are available:
+There is no React/Preact and no iframe. `src/index.ts` exports a
+[`FrontendRenderer`](https://docs.streamlit.io/develop/api-reference/custom-components/st.components.v2.component)
+from [`@streamlit/component-v2-lib`](https://www.npmjs.com/package/@streamlit/component-v2-lib)
+that wires the button mounted by the Python side (`src/st_copy/__init__.py`),
+copies text on click, and reports the result back via `setTriggerValue('copied', ...)`.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Scripts
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+npm install           # install dependencies
+npm run build         # type-check (tsc -b) and bundle into dist/ (vite lib mode)
+npm run dev           # rebuild into dist/ on change (vite build --watch)
+npm test              # vitest (jsdom)
+npm run lint          # eslint
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+`npm run build` emits a single hashed ES module (`dist/index-*.js`) plus its CSS
+(`dist/*.css`). Those files are shipped inside the Python wheel and located at
+runtime through the `[[tool.streamlit.component.components]]` `asset_dir`
+declared in `src/st_copy/pyproject.toml`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Local development
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+Streamlit Components v2 has no dev-server URL mode. To iterate live, install the
+package in editable mode and run the watcher so Streamlit re-serves the rebuilt
+bundle:
+
+```bash
+uv pip install -e .                              # from the repo root
+npm --prefix src/st_copy/frontend run dev        # rebuild dist/ on change
+streamlit run examples/app.py                    # in another terminal
 ```

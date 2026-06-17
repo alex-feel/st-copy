@@ -1,48 +1,20 @@
 import js from '@eslint/js'
 import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
-import eslintHtml from 'eslint-plugin-html'
-import htmlPlugin from '@html-eslint/eslint-plugin'
-import htmlParser from '@html-eslint/parser'
 
+// Reactless Streamlit Components v2 frontend: a single TypeScript bundle, no
+// React/JSX and no HTML files, so only the base JS + typescript-eslint rules are
+// needed (the former react-hooks / react-refresh / eslint-plugin-html blocks
+// were removed along with the iframe entry point).
 export default tseslint.config(
   { ignores: ['dist'] },
 
-  // TypeScript / React configuration
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ['**/*.{ts,tsx}'],
+    files: ['**/*.ts'],
     languageOptions: {
-      ecmaVersion: 2020,
+      ecmaVersion: 2022,
       globals: globals.browser,
-    },
-    plugins: {
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
-    },
-    rules: {
-      ...reactHooks.configs.recommended.rules,
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
-    },
-  },
-
-  // HTML files configuration
-  {
-    files: ['**/*.html'],
-    languageOptions: {
-      parser: htmlParser,
-    },
-    plugins: {
-      html: eslintHtml,
-      '@html-eslint': htmlPlugin,
-    },
-    rules: {
-      ...htmlPlugin.configs['flat/recommended'].rules,
     },
   },
 )
