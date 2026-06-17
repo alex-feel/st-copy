@@ -27,7 +27,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
           cache-dependency-path: src/st_copy/frontend/package-lock.json
 
@@ -49,7 +49,7 @@ jobs:
           echo "dist-path=dist" >> $GITHUB_OUTPUT
 
       - name: Inspect wheel
-        run: unzip -l dist/*.whl | grep frontend/dist/index.html
+        run: unzip -l dist/*.whl | grep -E 'frontend/dist/index-.*\.js'
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

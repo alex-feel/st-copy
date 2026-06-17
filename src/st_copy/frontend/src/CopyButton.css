@@ -7,7 +7,9 @@
   background:transparent;
   border:none;
   cursor:pointer;
-  color:inherit;
+  /* Theme-aware: Streamlit Components v2 exposes the theme as CSS custom
+     properties (e.g. --st-text-color); fall back to inherited color. */
+  color: var(--st-text-color, inherit);
   line-height:0;
   min-height:1.5rem;
   /* Ensure consistent width to prevent layout shifts */

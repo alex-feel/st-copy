@@ -1,29 +1,26 @@
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import cssInjectedByJs from 'vite-plugin-css-injected-by-js';
 
-// Use Preact to shrink bundle size
-const alias = {
-  react: 'preact/compat',
-  'react-dom': 'preact/compat',
-  'react-dom/client': 'preact/compat',
-  'react/jsx-runtime': 'preact/jsx-runtime',
-};
-
-// https://vite.dev/config/
+// Streamlit Custom Components v2 build: a single ES-module bundle (no iframe,
+// no React/Preact) emitted into `dist/`, which `src/st_copy/__init__.py`
+// references via the `js`/`css` globs declared against the component asset_dir.
 export default defineConfig({
-  plugins: [react(), cssInjectedByJs()],
-
-  resolve: { alias },
-  optimizeDeps: { include: ['streamlit-component-lib'] },
-
+  base: './',
   build: {
-    emptyOutDir: true,
     outDir: 'dist',
+    emptyOutDir: true,
+    cssCodeSplit: false,
+    lib: {
+      entry: './src/index.ts',
+      name: 'StCopy',
+      formats: ['es'],
+      fileName: 'index-[hash]',
+    },
     rollupOptions: {
-      external: [],
+      output: {
+        // Hash the extracted CSS file too (lib mode leaves a literal token
+        // otherwise), so the Python `css='index-*.css'` glob stays clean.
+        assetFileNames: 'index-[hash][extname]',
+      },
     },
   },
-
-  base: './',
 });

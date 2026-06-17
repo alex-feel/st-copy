@@ -40,6 +40,13 @@ with st.sidebar:
 # Main app
 st.title('Copy Button Demo • Chat API')
 
+# Issue #27: with Streamlit Custom Components v2 the button is frameless, so it
+# aligns inline beside sibling elements inside a horizontal container instead of
+# wrapping onto a new row.
+with st.container(horizontal=True):
+    st.write('test')
+    copy_button('test', key='copy-btn-horizontal')
+
 msg_1 = '''Use the following code to add a copy button:
 
 ```python

@@ -1,89 +1,51 @@
-"""
-Pure‑Python unit tests for the ``st_copy`` wrapper.
-They do *not* require a Streamlit runtime or browser.
+"""Pure-Python unit tests for the ``st_copy`` wrapper.
+
+They do *not* require a Streamlit runtime or browser. The Streamlit Components
+v2 mounting command is replaced by a recorder so the public ``copy_button``
+contract (argument forwarding, defaults, UUID-4 key autogeneration, the
+``width='content'`` inline mount that fixes issue #27, and the tri-state return
+value) can be asserted in isolation.
 """
 
+import importlib
 import uuid
-from importlib import reload
-from pathlib import Path
-from types import ModuleType
 from typing import Any
-from typing import Dict
-from typing import List
 
 import pytest
 
+import st_copy
 
-# Helpers
-class _Recorder:
-    """Collect calls made to a monkey‑patched ``declare_component``."""
 
-    def __init__(self) -> None:
-        self.calls: List[Dict[str, Any]] = []
+class _RenderRecorder:
+    """Capture the kwargs passed to the v2 mounting command; return a fixed result."""
 
-    def __call__(self, *args, **kwargs):
-        # store positional + keyword arguments for later assertions
-        self.calls.append({'args': args, **kwargs})
+    def __init__(self, result: Any = None) -> None:
+        self.calls: list[dict[str, Any]] = []
+        self.result = result
 
-        def _fake_component(**inner_kwargs):
-            # a dummy component that simply returns its kwargs,
-            # letting the test inspect the values that reached JS
-            return inner_kwargs
-
-        return _fake_component
+    def __call__(self, **kwargs: Any) -> Any:
+        self.calls.append(kwargs)
+        return self.result
 
 
 @pytest.fixture
-def st_copy_module(monkeypatch) -> ModuleType:
-    """
-    Import ``st_copy`` while monkey‑patching
-    :pyfunc:`streamlit.components.v1.declare_component`.
-    """
-    from streamlit import components as comps_pkg  # lazy import to avoid heavy deps
-
-    rec = _Recorder()
-    monkeypatch.setattr(comps_pkg.v1, 'declare_component', rec)
-
-    import st_copy  # noqa: E402 – import only *after* the patch
-    st_copy = reload(st_copy)  # ensure fresh module state
-    st_copy._recorder = rec    # make the recorder accessible to tests
+def st_copy_module() -> Any:
+    """Reload ``st_copy`` so the cached mounting command is reset per test."""
+    importlib.reload(st_copy)
     return st_copy
 
 
-@pytest.fixture
-def st_copy_module_dev(monkeypatch) -> ModuleType:
-    """Import ``st_copy`` with the dev server enabled."""
-    monkeypatch.setenv('ST_COPY_DEV_SERVER', 'auto')
-    from streamlit import components as comps_pkg
-
-    rec = _Recorder()
-    monkeypatch.setattr(comps_pkg.v1, 'declare_component', rec)
-
-    import st_copy  # noqa: E402
-    st_copy = reload(st_copy)
-    st_copy._recorder = rec
-    return st_copy
-
-
-# Tests
-def test_declare_component_path(st_copy_module):
-    """``declare_component`` must be called once with the correct *path*."""
-    rec: _Recorder = st_copy_module._recorder
-    assert rec.calls, 'declare_component was never called'
-    call = rec.calls[0]
-
-    # first positional arg is the component name
-    assert call['args'][0] == 'st_copy'
-
-    path = Path(call['path'])
-    assert path.name == 'dist'
-    assert path.joinpath('index.html').exists()
+def _install_recorder(module: Any, result: Any = None) -> _RenderRecorder:
+    """Replace the cached mounting command with a recorder and return it."""
+    recorder = _RenderRecorder(result)
+    module._component = recorder
+    return recorder
 
 
 @pytest.mark.parametrize(
     'call_kwargs',
     [
-        # 1) no optional arguments – rely on defaults
+        # 1) no optional arguments - rely on defaults
         {},
         # 2) a subset of optional arguments
         {'tooltip': 'Copy this', 'key': 'foo'},
@@ -97,78 +59,81 @@ def test_declare_component_path(st_copy_module):
     ],
 )
 def test_forwards_all_arguments(st_copy_module, call_kwargs):
-    """
-    ``copy_button`` must forward *every* parameter unchanged to the JS side.
-    """
-    recorded: List[Dict[str, Any]] = []
+    """``copy_button`` must forward every parameter to the component ``data`` payload."""
+    recorder = _install_recorder(st_copy_module)
 
-    # replace the real component with a spy
-    st_copy_module.component = lambda **kw: recorded.append(kw) or 'sentinel'
+    st_copy_module.copy_button('hello', **call_kwargs)
 
-    ret = st_copy_module.copy_button('hello', **call_kwargs)
-
-    assert ret == 'sentinel'
-    assert recorded, 'Component was never called'
-    forwarded = recorded[0]
+    assert recorder.calls, 'component was never mounted'
+    mounted = recorder.calls[0]
+    data = mounted['data']
 
     # immutable parameter
-    assert forwarded['text'] == 'hello'
+    assert data['text'] == 'hello'
 
-    # every kwarg supplied by the test must arrive unchanged
-    for k, v in call_kwargs.items():
-        assert forwarded[k] == v
+    # defaults applied unless overridden
+    assert data['icon'] == call_kwargs.get('icon', 'material_symbols')
+    assert data['tooltip'] == call_kwargs.get('tooltip', 'Copy')
+    assert data['copied_label'] == call_kwargs.get('copied_label', 'Copied!')
+
+    # explicit key is forwarded unchanged
+    if 'key' in call_kwargs:
+        assert mounted['key'] == call_kwargs['key']
+
+    # a copied-trigger callback is always registered so the result exposes it
+    assert callable(mounted['on_copied_change'])
+
+
+def test_mounts_inline_for_horizontal_layout(st_copy_module):
+    """The component must be mounted with ``width='content'`` (the issue #27 fix)."""
+    recorder = _install_recorder(st_copy_module)
+    st_copy_module.copy_button('hi')
+    assert recorder.calls[0]['width'] == 'content'
 
 
 @pytest.mark.parametrize('icon_val', ['material_symbols', 'st'])
 def test_icon_forwarded(st_copy_module, icon_val):
     """The ``icon`` parameter must pass through unchanged."""
-    captured = []
-    st_copy_module.component = lambda **kw: captured.append(kw) or kw
+    recorder = _install_recorder(st_copy_module)
     st_copy_module.copy_button('hi', icon=icon_val)
-    assert captured[0]['icon'] == icon_val
+    assert recorder.calls[0]['data']['icon'] == icon_val
 
 
 def test_copied_label_default_and_custom(st_copy_module):
     """Check default and custom ``copied_label`` handling."""
-    captured = []
-    st_copy_module.component = lambda **kw: captured.append(kw) or kw
+    recorder = _install_recorder(st_copy_module)
 
-    # default value
     st_copy_module.copy_button('hi')
-    assert captured[0]['copied_label'] == 'Copied!'
-    captured.clear()
+    assert recorder.calls[0]['data']['copied_label'] == 'Copied!'
 
-    # custom value
     st_copy_module.copy_button('hi', copied_label='✅ Copied')
-    assert captured[0]['copied_label'] == '✅ Copied'
+    assert recorder.calls[1]['data']['copied_label'] == '✅ Copied'
 
 
 def test_key_autogenerated_uuid4(st_copy_module):
-    """
-    If ``key`` is omitted, the wrapper should generate a valid UUID‑4 string.
-    """
-    captured = []
-    st_copy_module.component = lambda **kw: captured.append(kw) or kw
+    """If ``key`` is omitted, the wrapper should generate a valid UUID-4 string."""
+    recorder = _install_recorder(st_copy_module)
     st_copy_module.copy_button('hi')  # omit ``key``
 
-    auto_key = captured[0]['key']
-    # Will raise ValueError if not a valid UUID‑4
+    auto_key = recorder.calls[0]['key']
+    # Will raise ValueError if not a valid UUID-4
     uuid_obj = uuid.UUID(auto_key, version=4)
     assert str(uuid_obj) == auto_key
 
 
-def test_returns_true_on_success(st_copy_module):
-    """``copy_button`` must return ``True`` when the component does."""
-    st_copy_module.component = lambda **_: True
-
+def test_returns_true_when_copied(st_copy_module):
+    """``copy_button`` returns ``True`` when the component reports a successful copy."""
+    _install_recorder(st_copy_module, result={'copied': True})
     assert st_copy_module.copy_button('hi') is True
 
 
-def test_declare_component_url(st_copy_module_dev):
-    """``declare_component`` must use the development URL when configured."""
-    rec: _Recorder = st_copy_module_dev._recorder
-    call = rec.calls[0]
+def test_returns_false_when_copy_failed(st_copy_module):
+    """``copy_button`` returns ``False`` when the component reports a failed copy."""
+    _install_recorder(st_copy_module, result={'copied': False})
+    assert st_copy_module.copy_button('hi') is False
 
-    assert call['args'][0] == 'st_copy'
-    assert call['url'] == 'http://localhost:3001'
 
+def test_returns_none_before_interaction(st_copy_module):
+    """``copy_button`` returns ``None`` before the button has been clicked."""
+    _install_recorder(st_copy_module, result={})
+    assert st_copy_module.copy_button('hi') is None
