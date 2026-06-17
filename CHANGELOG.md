@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.0.0](https://github.com/alex-feel/st-copy/compare/v1.1.2...v2.0.0) (2026-06-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* Custom Components v2 requires Streamlit >= 1.56 and Python >= 3.10 (previously Streamlit >= 1.45 and Python >= 3.9). The component is now frameless (no iframe); the public copy_button() signature and return value are unchanged.
+
+### Features
+
+* migrate to Streamlit Custom Components v2 and fix horizontal layout ([1831952](https://github.com/alex-feel/st-copy/commit/1831952320b2b50962c134539b810901a0a4aeba)), closes [#27](https://github.com/alex-feel/st-copy/issues/27)
+
+
+### Bug Fixes
+
+* embed the frontend bundle inline instead of via an asset_dir manifest ([34478f8](https://github.com/alex-feel/st-copy/commit/34478f8956d16a1eb0aaf8d4aec58095290927e6))
+* include the frontend bundle as a wheel artifact instead of a force-include so editable builds don't require it ([d6f0036](https://github.com/alex-feel/st-copy/commit/d6f0036f8fd61b283444fa47d6d2cd514ada72c5))
+
 ## [1.1.2](https://github.com/alex-feel/st-copy/compare/v1.1.1...v1.1.2) (2025-06-15)
 
 
