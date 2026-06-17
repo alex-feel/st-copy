@@ -31,12 +31,13 @@ include = [
 [tool.hatch.build.targets.wheel]
 packages = ["src/st_copy"]
 # Ship only the built frontend bundle (the v2 ES module + CSS), never the
-# frontend sources or node_modules. The build output is git-ignored, so it is
-# force-included after excluding the rest of the frontend directory.
+# frontend sources or node_modules. `artifacts` re-includes the git-ignored
+# build output without *force*-including it, so an editable build/sync does not
+# fail when the bundle has not been built yet (e.g. the type-check or
+# lockfile-update CI jobs); the published wheel still contains dist/ because the
+# release/build jobs build the frontend first.
 exclude = ["src/st_copy/frontend"]
-
-[tool.hatch.build.targets.wheel.force-include]
-"src/st_copy/frontend/dist" = "st_copy/frontend/dist"
+artifacts = ["src/st_copy/frontend/dist/**"]
 
 [dependency-groups]
 dev = [
